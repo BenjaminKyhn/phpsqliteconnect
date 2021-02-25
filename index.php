@@ -3,12 +3,20 @@ require 'vendor/autoload.php';
 
 use App\SQLiteConnection as SQLiteConnection;
 use App\SQLiteCreateTable as SQLiteCreateTable;
+use App\SQLiteUpdate;
+use App\SQLiteQuery;
 
 $sqlite = new SQLiteCreateTable((new SQLiteConnection())->connect());
-// create new tables
-$sqlite->createTables();
+
 // get the table list
 $tables = $sqlite->getTableList();
+
+$pdo = (new SQLiteConnection())->connect();
+$sqlite = new SQLiteQuery($pdo);
+
+$projects = $sqlite->getProjectObjectList();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,11 +43,49 @@ $tables = $sqlite->getTableList();
         </tr>
         </thead>
         <tbody>
+
         <?php foreach ($tables as $table) : ?>
             <tr>
-
                 <td><?php echo $table ?></td>
             </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Projects</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($projects as $project) : ?>
+            <tr>
+                <td><?php echo $project->project_name ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Tasks</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($projects as $project) :
+            $tasks = $sqlite->getTaskByProject($project->project_id);
+
+            # use var_dump() for debugging
+
+            foreach ($tasks as $task) :
+                ?>
+                <tr>
+                    <td><?php echo $task['task_name']; ?></td>
+                </tr>
+
+            <?php endforeach; ?>
         <?php endforeach; ?>
         </tbody>
     </table>
